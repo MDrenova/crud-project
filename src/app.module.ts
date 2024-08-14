@@ -6,8 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
 import { EmployeeModule } from './employee/employee.module';
 import { Employee } from './employee/entities/employee.entity';
-import { ExampleModule } from './example/example.module';
-import { Example } from './example/entities/example.entity';
 import { UserService } from './user/user.service';
 import { UserRepository } from './repository/user.repository';
 
@@ -21,13 +19,12 @@ import { UserRepository } from './repository/user.repository';
       password: 'admin@admin',
       database: 'mydb',
       migrations: ['dist/migration/*.js'],
-      entities: [User, Employee, Example],
+      entities: [User, Employee],
       synchronize: false,
       logging: true
     }),
     UserModule,
-    EmployeeModule,
-    ExampleModule],
+    EmployeeModule],
   controllers: [AppController],
   providers: [AppService, UserService, UserRepository],
 })
