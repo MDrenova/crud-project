@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Body, Patch, Delete, NotFoundException, Put } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, Patch, Delete, NotFoundException, Put, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -50,11 +50,16 @@ export class EmployeeController {
     await this.employeeService.remove(id);
   }
 
-  @Delete(':id/soft')
-  @ApiOperation({ summary: 'Soft delete an employee by ID' })
-  @ApiResponse({ status: 204, description: 'The employee has been successfully soft-deleted.' })
-  @ApiResponse({ status: 404, description: 'Employee not found' })
-  async softDelete(@Param('id') id: number): Promise<void> {
-    await this.employeeService.softDelete(id);
+  // @Delete(':id/soft')
+  // @ApiOperation({ summary: 'Soft delete an employee by ID' })
+  // @ApiResponse({ status: 204, description: 'The employee has been successfully soft-deleted.' })
+  // @ApiResponse({ status: 404, description: 'Employee not found' })
+  // async softDelete(@Param('id') id: number): Promise<void> {
+  //   await this.employeeService.softDelete(id);
+  // }
+
+  @Get(':id/vacation-days')
+  async getAccumulatedVacationDays(@Param('id', ParseIntPipe) id: number): Promise<number> {
+    return this.employeeService.getAccumulatedVacationDays(id);
   }
 }

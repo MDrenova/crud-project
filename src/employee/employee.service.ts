@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { Employee } from './entities/employee.entity';
 import { Repository } from 'typeorm';
 import { plainToClass } from 'class-transformer';
 import { UserRepository } from 'src/repository/user.repository';
+import { addYears, differenceInCalendarDays, endOfYear, startOfYear } from 'date-fns';
 
 
 @Injectable()
@@ -77,10 +78,44 @@ export class EmployeeService {
     }
   }
 
-  async softDelete(id: number): Promise<void> {
-    const result = await this.employeeRepository.softDelete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Employee with id ${id} not found`);
+  // async softDelete(id: number): Promise<void> {
+  //   const result = await this.employeeRepository.softDelete(id);
+  //   if (result.affected === 0) {
+  //     throw new NotFoundException(`Employee with id ${id} not found`);
+  //   }
+  // }
+
+  async getAccumulatedVacationDays(employeeId: number): Promise<number> {
+    const employee = await this.employeeRepository.findOne({
+      where: { id: employeeId },
+    });
+
+    if (!employee) {
+      throw new NotFoundException(`Employee with id ${employeeId} not found`);
     }
-  }
+
+    const today = new Date();
+    const employmentStartDate = employee.dateStartingJob;
+
+    // Calculate the start and end dates of the year in which the employee started
+    const yearStart = employmentStartDate;
+    const yearEnd = addYears(yearStart, 1);
+
+    // Check if today is beyond the end of the year in which the employee started
+    if (today > yearEnd) {
+        throw new BadRequestException(`You had 20 vacation days, and they expired on ${yearEnd.toDateString()}`);
+    }
+
+    // Calculate the number of days the employee has worked since their start date
+    const daysWorkedThisYear = differenceInCalendarDays(today, employmentStartDate) + 1;
+
+    // Calculate the total number of days in the employee's starting year
+    const totalDaysInYear = differenceInCalendarDays(yearEnd, yearStart) + 1;
+
+    // Calculate accumulated vacation days (20 days for the full year)
+    const accumulatedVacationDays = (daysWorkedThisYear / totalDaysInYear) * 20;
+
+    return Math.round(accumulatedVacationDays);
+}
+
 }
