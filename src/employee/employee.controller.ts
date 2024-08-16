@@ -59,7 +59,7 @@ export class EmployeeController {
   // }
 
   @Get(':id/vacation-days')
-  async getAccumulatedVacationDays(@Param('id', ParseIntPipe) id: number): Promise<number> {
+  async getAccumulatedVacationDays(@Param('id', ParseIntPipe) id: number): Promise<string> {
     return this.employeeService.getAccumulatedVacationDays(id);
   }
 }

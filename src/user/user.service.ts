@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository, SortOrder } from 'src/repository/user.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
+import { UserResponseDto } from './dto/response-user.dto';
 
 
 @Injectable()
@@ -13,46 +14,43 @@ export class UserService {
     private userRepository: UserRepository,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<CreateUserDto> {
+  async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const user = this.userRepository.create(createUserDto);
     await this.userRepository.save(user);
-    return plainToClass(CreateUserDto, user);
+    return plainToClass(UserResponseDto, user);
   }
-
-  async findAll(): Promise<CreateUserDto[]> {
+  
+  async findAll(): Promise<UserResponseDto[]> {
     const result = await this.userRepository.find();
-    return result.map(element => plainToClass(CreateUserDto, element));
+    return result.map(element => plainToClass(UserResponseDto, element));
   }
-
-  async findOne(id: number): Promise<CreateUserDto> {
+  
+  async findOne(id: number): Promise<UserResponseDto> {
     const user = await this.userRepository.findOneByOrFail({ id: id });
-    // if (!user) {
-    //   throw new NotFoundException(`User with id ${id} not found`);
-    // }
-    return plainToClass(CreateUserDto, user);
+    return plainToClass(UserResponseDto, user);
   }
-
-  async update(id: number, updateUserDto: CreateUserDto): Promise<CreateUserDto> {
+  
+  async update(id: number, updateUserDto: CreateUserDto): Promise<UserResponseDto> {
     const user = await this.userRepository.findOneByOrFail({ id: id });
     const mergeUser = this.userRepository.merge(user, updateUserDto);
     const result = await this.userRepository.save(mergeUser);
-    return plainToClass(CreateUserDto, result);
+    return plainToClass(UserResponseDto, result);
   }
-
+  
   async remove(id: number): Promise<void> {
     const result = await this.userRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
   }
-
+  
   async softDelete(id: number): Promise<void> {
     const result = await this.userRepository.softDelete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
   }
-
+  
   async getFilteredUsers(
     firstname?: string,
     lastname?: string,
@@ -61,7 +59,7 @@ export class UserService {
     sortOrder?: SortOrder,
     page: number = 1,
     limit: number = 10,
-  ): Promise<{ users: CreateUserDto[], totalRows: number }> {
+  ): Promise<{ users: UserResponseDto[], totalRows: number }> {
     const query = this.userRepository.getFilteredUsers(
       firstname,
       lastname,
@@ -71,9 +69,9 @@ export class UserService {
       page,
       limit,
     );
-
+  
     const [users, total] = await query.getManyAndCount();
-    const userDtos = users.map(user => plainToClass(CreateUserDto, user));
+    const userDtos = users.map(user => plainToClass(UserResponseDto, user));
     return { users: userDtos, totalRows: total };
   }
 }

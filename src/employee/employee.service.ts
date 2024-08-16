@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { plainToClass } from 'class-transformer';
 import { UserRepository } from 'src/repository/user.repository';
 import { addYears, differenceInCalendarDays, endOfYear, startOfYear } from 'date-fns';
+import { UserResponseDto } from 'src/user/dto/response-user.dto';
 
 
 @Injectable()
@@ -24,19 +25,25 @@ export class EmployeeService {
     const userDto = createEmployeeDto.user;
     const user = this.userRepository.create(userDto);
     await this.userRepository.save(user);
-
+  
     const employee = this.employeeRepository.create({
       ...createEmployeeDto,
       user,
     });
     await this.employeeRepository.save(employee);
-
-    return plainToClass(CreateEmployeeDto, employee);
+  
+    return plainToClass(CreateEmployeeDto, {
+      ...employee,
+      user: plainToClass(UserResponseDto, user),
+    });
   }
 
   async findAll(): Promise<CreateEmployeeDto[]> {
     const employees = await this.employeeRepository.find({ relations: ['user'] });
-    return employees.map(employee => plainToClass(CreateEmployeeDto, employee));
+    return employees.map(employee => plainToClass(CreateEmployeeDto, {
+      ...employee,
+      user: plainToClass(UserResponseDto, employee.user),
+    }));
   }
 
   async findOne(id: number): Promise<CreateEmployeeDto> {
@@ -47,7 +54,10 @@ export class EmployeeService {
     if (!employee) {
       throw new NotFoundException(`Employee with id ${id} not found`);
     }
-    return plainToClass(CreateEmployeeDto, employee);
+    return plainToClass(CreateEmployeeDto, {
+      ...employee,
+      user: plainToClass(UserResponseDto, employee.user),  // Transform user to exclude password
+    });
   }
 
   async update(id: number, updateEmployeeDto: CreateEmployeeDto): Promise<CreateEmployeeDto> {
@@ -85,7 +95,7 @@ export class EmployeeService {
   //   }
   // }
 
-  async getAccumulatedVacationDays(employeeId: number): Promise<number> {
+  async getAccumulatedVacationDays(employeeId: number): Promise<string> {
     const employee = await this.employeeRepository.findOne({
       where: { id: employeeId },
     });
@@ -115,7 +125,7 @@ export class EmployeeService {
     // Calculate accumulated vacation days (20 days for the full year)
     const accumulatedVacationDays = (daysWorkedThisYear / totalDaysInYear) * 20;
 
-    return Math.round(accumulatedVacationDays);
+    return `Employee with ID ${employeeId} has ${Math.round(accumulatedVacationDays)} vacation days.`;
 }
 
 }

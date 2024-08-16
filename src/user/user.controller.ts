@@ -5,6 +5,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SortOrder } from 'src/repository/user.repository';
 
+export enum SortByFields {
+  firstname = 'firstname',
+  lastname = 'lastname',
+  state = 'state'
+}
+
 @ApiTags('User')
 @Controller('user')
 export class UserController {
@@ -56,7 +62,7 @@ export class UserController {
   @ApiQuery({ name: 'firstname', required: false, type: String })
   @ApiQuery({ name: 'lastname', required: false, type: String })
   @ApiQuery({ name: 'state', required: false, type: String })
-  @ApiQuery({ name: 'sortBy', required: false, enum: ['firstname', 'lastname', 'state'] })
+  @ApiQuery({ name: 'sortBy', required: false, enum: SortByFields })
   @ApiQuery({ name: 'sortOrder', required: false, enum: SortOrder })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
