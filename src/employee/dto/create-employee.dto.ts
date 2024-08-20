@@ -24,7 +24,6 @@ export class CreateEmployeeDto {
     civilStatus: CivilStatus;
 
     @ApiProperty({ description: 'user data' })
-    @IsInt()
     @IsNotEmpty()
     user: CreateUserDto;
 }

@@ -95,7 +95,7 @@ export class EmployeeService {
   //   }
   // }
 
-  async getAccumulatedVacationDays(employeeId: number): Promise<string> {
+  async getAccumulatedVacationDays(employeeId: number): Promise<number> {
     const employee = await this.employeeRepository.findOne({
       where: { id: employeeId },
     });
@@ -108,7 +108,7 @@ export class EmployeeService {
     const employmentStartDate = employee.dateStartingJob;
 
     // Calculate the start and end dates of the year in which the employee started
-    const yearStart = employmentStartDate;
+    const yearStart = startOfYear(new Date());
     const yearEnd = addYears(yearStart, 1);
 
     // Check if today is beyond the end of the year in which the employee started
@@ -117,7 +117,7 @@ export class EmployeeService {
     }
 
     // Calculate the number of days the employee has worked since their start date
-    const daysWorkedThisYear = differenceInCalendarDays(today, employmentStartDate) + 1;
+    const daysWorkedThisYear = differenceInCalendarDays(today, yearStart) + 1;
 
     // Calculate the total number of days in the employee's starting year
     const totalDaysInYear = differenceInCalendarDays(yearEnd, yearStart) + 1;
@@ -125,7 +125,7 @@ export class EmployeeService {
     // Calculate accumulated vacation days (20 days for the full year)
     const accumulatedVacationDays = (daysWorkedThisYear / totalDaysInYear) * 20;
 
-    return `Employee with ID ${employeeId} has ${Math.round(accumulatedVacationDays)} vacation days.`;
+    return Math.round(accumulatedVacationDays);
 }
 
 }
